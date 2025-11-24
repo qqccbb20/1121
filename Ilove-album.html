@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我们的故事相册 | 特别的道歉与爱意</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- GSAP 动画库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <!-- 自定义 Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF6B8B',
+                        secondary: '#82C3EC',
+                        accent: '#FFD166',
+                        soft: '#F9F7F7',
+                        dark: '#4B4B4B'
+                    },
+                    fontFamily: {
+                        sans: ['Comic Sans MS', 'Arial', 'sans-serif'],
+                        handwritten: ['Comic Sans MS', 'cursive']
+                    },
+                    animation: {
+                        'bounce-slow': 'bounce 3s infinite',
+                        'wiggle': 'wiggle 1s ease-in-out infinite',
+                        'float': 'float 3s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        wiggle: {
+                            '0%, 100%': { transform: 'rotate(-3deg)' },
+                            '50%': { transform: 'rotate(3deg)' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow {
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            }
+            .text-shadow-lg {
+                text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
+            }
+            .border-dashed-custom {
+                border-style: dashed;
+                border-width: 3px;
+            }
+            .cloud-bg {
+                background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="30" r="20" fill="%23FFFFFF" opacity="0.8"/><circle cx="30" cy="35" r="15" fill="%23FFFFFF" opacity="0.8"/><circle cx="70" cy="35" r="15" fill="%23FFFFFF" opacity="0.8"/><circle cx="20" cy="40" r="10" fill="%23FFFFFF" opacity="0.8"/><circle cx="80" cy="40" r="10" fill="%23FFFFFF" opacity="0.8"/></svg>');
+                background-repeat: repeat;
+                background-size: 100px 100px;
+            }
+            .heart-bg {
+                background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="%23FF6B8B" opacity="0.1"/></svg>');
+                background-repeat: repeat;
+                background-size: 40px 40px;
+            }
+            .page-transition {
+                transition: all 0.5s ease-in-out;
+            }
+            .page-enter {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            .page-enter-active {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            .page-exit {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            .page-exit-active {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            .text-balance {
+                text-wrap: balance;
+            }
+        }
+    </style>
+    <style>
+        /* 自定义样式 */
+        body {
+            font-family: 'Comic Sans MS', Arial, sans-serif;
+            background-color: #F9F7F7;
+            overflow-x: hidden;
+        }
+        
+        /* 移动端优化 */
+        @media (max-width: 640px) {
+            .timeline-item::before,
+            .timeline-item::after {
+                display: none;
+            }
+            
+            .text-balance {
+                text-wrap: balance;
+            }
+            
+            .btn-mobile-full {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+        }
+        
+        .dog-character {
+            transition: transform 0.3s ease;
+        }
+        
+        .dog-character:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+        
+        .photo-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .photo-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .timeline-item {
+            position: relative;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -30px;
+            top: 0;
+            height: 100%;
+            width: 2px;
+            background-color: #FF6B8B;
+        }
+        
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            left: -36px;
+            top: 10px;
+            height: 14px;
+            width: 14px;
+            border-radius: 50%;
+            background-color: #FFD166;
+            border: 2px solid #FF6B8B;
+        }
+        
+        .qrcode-scanner {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 107, 139, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(255, 107, 139, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 107, 139, 0);
+            }
+        }
+        
+        .letter-animation {
+            overflow: hidden;
+            white-space: nowrap;
+            border-right: 2px solid #FF6B8B;
+            animation: typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite;
+        }
+        
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+        
+        @keyframes blink-caret {
+            from, to { border-color: transparent }
+            50% { border-color: #FF6B8B }
+        }
+        
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .wiggle {
+            animation: wiggle 1s ease-in-out infinite;
+        }
+        
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(-3deg); }
+            50% { transform: rotate(3deg); }
+        }
+        
+        .hidden-content {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+        
+        .visible-content {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            border-radius: 50%;
+            animation: confetti-fall 5s linear infinite;
+        }
+        
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body class="heart-bg">
+    <!-- 导航栏 -->
+    <nav class="fixed top-0 left-0 right-0 bg-white bg-opacity-90 shadow-md z-50">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center">
+                <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/93b3614693c640039fbd745c16d7dcad~tplv-a9rns2rl98-image.image?rcl=20251124203723AA54BA6E84B187F0DD32&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1766579883&x-signature=dJQFcC8BcRea5zKd7Dq7nLlY0vg%3D" alt="线条小狗" class="h-10 w-10 mr-2 dog-character">
+                <h1 class="text-xl font-bold text-primary">我们的故事相册</h1>
+            </div>
+            <div class="hidden md:flex space-x-6">
+                <a href="#home" class="text-dark hover:text-primary transition-colors duration-300">首页</a>
+                <a href="#story" class="text-dark hover:text-primary transition-colors duration-300">我们的故事</a>
+                <a href="#qrcode" class="text-dark hover:text-primary transition-colors duration-300">二维码互动</a>
+                <a href="#apology" class="text-dark hover:text-primary transition-colors duration-300">道歉信</a>
+            </div>
+            <div class="md:hidden">
+                <button id="menu-toggle" class="text-dark focus:outline-none">
+                    <i class="fa fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+        <!-- 移动端菜单 -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white shadow-lg absolute w-full">
+            <div class="container mx-auto px-4 py-2 flex flex-col space-y-3">
+                <a href="#home" class="text-dark hover:text-primary transition-colors duration-300 py-2">首页</a>
+                <a href="#story" class="text-dark hover:text-primary transition-colors duration-300 py-2">我们的故事</a>
+                <a href="#qrcode" class="text-dark hover:text-primary transition-colors duration-300 py-2">二维码互动</a>
+                <a href="#apology" class="text-dark hover:text-primary transition-colors duration-300 py-2">道歉信</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 首页 -->
+    <section id="home" class="min-h-screen pt-20 pb-10 px-4">
+        <div class="container mx-auto">
+            <div class="flex flex-col md:flex-row items-center justify-between">
+                <div class="md:w-1/2 mb-10 md:mb-0">
+                    <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold text-primary mb-6 text-shadow text-balance">
+                        欢迎来到<br>我们的故事相册
+                    </h2>
+                    <p class="text-lg md:text-xl text-dark mb-8">
+                        这是一个特别的地方，记录着我们共同走过的点点滴滴。
+                        扫描相册中的二维码，探索更多精彩故事，感受满满的爱意。
+                    </p>
+                    <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+                        <a href="#story" class="bg-primary hover:bg-pink-500 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-all duration-300 transform hover:scale-105 btn-mobile-full">
+                            开始探索
+                        </a>
+                        <a href="#qrcode" class="bg-white hover:bg-gray-100 text-primary font-bold py-3 px-6 rounded-full shadow-lg border-2 border-primary transition-all duration-300 transform hover:scale-105 btn-mobile-full">
+                            二维码互动
+                        </a>
+                    </div>
+                </div>
+                <div class="md:w-1/2 flex justify-center">
+                    <div class="relative">
+                        <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/a00d78d17dfd40feb822406ae9db2648~tplv-a9rns2rl98-image.image?rcl=20251124203723AA54BA6E84B187F0DD32&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1766579879&x-signature=Cjs49d9a3NL2jdq70mglI3WvsCo%3D" alt="情侣散步" class="rounded-xl shadow-2xl w-full max-w-md">
+                        <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/93b3614693c640039fbd745c16d7dcad~tplv-a9rns2rl98-image.image?rcl=20251124203723AA54BA6E84B187F0DD32&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1766579883&x-signature=dJQFcC8BcRea5zKd7Dq7nLlY0vg%3D" alt="线条小狗" class="absolute -bottom-10 -left-10 w-24 h-24 sm:w-32 sm:h-32 dog-character floating">
+                        <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/be5089b0eb82453ea9535ad9748dc415~tplv-a9rns2rl98-image.image?rcl=20251124203723AA54BA6E84B187F0DD32&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1766579879&x-signature=GEDiMAmpyEp4zoWK9%2F1DF14gJmA%3D" alt="疯狂动物城角色" class="absolute -top-10 -right-10 w-24 h-24 sm:w-32 sm:h-32 dog-character floating" style="animation-delay: 1s;">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 特色介绍 -->
+            <div class="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-white rounded-xl shadow-lg p-6 transform transition-all duration-300 hover:scale-105">
+                    <div class="bg-primary bg-opacity-10 rounded-full w-16 h-16 flex items-center justify-center mb-4">
+                        <i class="fa fa-heart text-primary text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-dark mb-2">爱的回忆</h3>
+                    <p class="text-gray-600">
+                        记录我们从相识到相爱的点点滴滴，每一张照片背后都有一个温馨的故事。
+                    </p>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-lg p-6 transform transition-all duration-300 hover:scale-105">
+                    <div class="bg-secondary bg-opacity-10 rounded-full w-16 h-16 flex items-center justify-center mb-4">
+                        <i class="fa fa-qrcode text-secondary text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-dark mb-2">二维码互动</h3>
+                    <p class="text-gray-600">
+                        扫描实体相册中的二维码，解锁更多隐藏内容，体验独特的互动探索乐趣。
+                    </p>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-lg p-6 transform transition-all duration-300 hover:scale-105">
+                    <div class="bg-accent bg-opacity-10 rounded-full w-16 h-16 flex items-center justify-center mb-4">
+                        <i class="fa fa-pencil text-accent text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-dark mb-2">真挚道歉</h3>
+                    <p class="text-gray-600">
+                        在这里，我想对你说声对不起，希望能得到你的原谅，重新开始我们的故事。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 我们的故事 -->
+    <section id="story" class="min-h-screen py-20 px-4 bg-soft">
+        <div class="container mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-2xl md:text-3xl lg:text-4xl font-bold text-primary mb-4">我们的故事</h2>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                    从相识到相知，从相爱到相守，每一个瞬间都值得珍藏。
+                    让我们一起回顾这段美好的旅程。
+                </p>
+            </div>
+            
+            <!-- 时间轴 -->
+            <div class="relative">
+                <!-- 时间轴线 -->
+                <div class="absolute left-0 md:left-1/2 transform md:-translate-x-1/2 h-full w-1 bg-primary bg-opacity-30"></div>
+                
+                <!-- 故事项目 1 -->
+                <div class="flex flex-col md:flex-row items-center mb-16">
+                    <div class="md:w-1/2 md:pr-12 md:text-right mb-6 md:mb-0">
+                        <h3 class="text-xl md:text-2xl font-bold text-primary mb-2">第一次相遇</h3>
+                        <p class="text-gray-600 mb-4">
+                            记得那是一个阳光明媚的下午，你站在路边傻傻的等我。
+                            上车后一言不发那害羞的样子现在想起来也觉得暖。
+                        </p>
+                        <p class="text-gray-500 italic">2025年7月19日</p>
+                    </div>
+                    <div class="md:w-1/2 md:pl-12">
+                        <div class="photo-card bg-white rounded-xl shadow-xl overflow-hidden">
+                            <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/64c454f9fbda4ced87a88aa302d386e9~tplv-a9rns2rl98-image.image?rcl=20251124203723AA54BA6E84B187F0DD32&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1766579899&x-signature=abTd1AxvDXmHByx7jcaUVmwA0rs%3D" alt="第一次约会" class="w-full h-64 object-cover">
+                            <div class="p-4">
+                                <p class="text-gray-700">我们聊了很多，从兴趣爱好到人生理想，仿佛有说不完的话。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 故事项目 2 -->
+                <div class="flex flex-col md:flex-row-reverse items-center mb-16">
+                    <div class="md:w-1/2 md:pl-12 md:text-left mb-6 md:mb-0">
+                        <h3 class="text-xl md:text-2xl font-bold text-primary mb-2">第一次旅行</h3>
+                        <p class="text-gray-600 mb-4">
+                            我们一起去了草原，看着美丽的日落，手牵手漫步在大草原上。
+                            那一刻，我觉得世界上最幸福的事情莫过于此。
+                        </p>
+                        <p class="text-gray-500 italic">2025年8月13日</p>
+                    </div>
+                    <div class="md:w-1/2 md:pr-12">
+                        <div class="photo-card bg-white rounded-xl shadow-xl overflow-hidden">
+                            <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/8c61d43476cb4460ae504d22e5337f10~tplv-a9rns2rl98-image.image?rcl=20251124203723AA54BA6E84B187F0DD32&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1766579899&x-signature=0AWpGtx8v7hrQNlc82NytY6M350%3D" alt="第一次旅行" class="w-full h-64 object-cover">
+                            <div class="p-4">
+                                <p class="text-gray-700">高大威猛的骏马，蓝色的天空配送草地，
+                                  我们的爱情也像这景色一样美丽。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 故事项目 3 -->
+                <div class="flex flex-col md:flex-row items-center mb-16">
+                    <div class="md:w-1/2 md:pr-12 md:text-right mb-6 md:mb-0">
+                        <h3 class="text-xl md:text-2xl font-bold text-primary mb-2">你的生日</h3>
+                        <p class="text-gray-600 mb-4">
+                            为你准备了一个惊喜的生日派对，看到你开心的笑容，我觉得一切都值得。
+                            希望以后的每一个生日，我都能陪在你身边。
+                        </p>
+                        <p class="text-gray-500 italic">2025年10月19日</p>
+                    </div>
+                    <div class="md:w-1/2 md:pl-12">
+                        <div class="photo-card bg-white rounded-xl shadow-xl overflow-hidden">
+                            <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/38fd68ba116444de8c69912042d7b852~tplv-a9rns2rl98-image.image?rcl=20251124203723AA54BA6E84B187F0DD32&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1766579899&x-signature=e7GVL5Opt9EFwv4iT7oRbBd7WJ4%3D" alt="生日庆祝" class="w-full h-64 object-cover">
+                            <div class="p-4">
+                                <p class="text-gray-700">蛋糕、礼物，还有朋友们的祝福，这是一个难忘的生日。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 故事项目 4 -->
+                <div class="flex flex-col md:flex-row-reverse items-center">
+                    <div class="md:w-1/2 md:pl-12 md:text-left mb-6 md:mb-0">
+                        <h3 class="text-xl md:text-2xl font-bold text-primary mb-2">我们的小矛盾</h3>
+                        <p class="text-gray-600 mb-4">
+                            每个人都会有不开心的时候，我们也不例外。
+                            但我相信，只要我们相互理解、相互包容，就没有解决不了的问题。
+                        </p>
+                        <p class="text-gray-500 italic">2025年11月20日</p>
+                    </div>
+                    <div class="md:w-1/2 md:pr-12">
+                        <div class="photo-card bg-white rounded-xl shadow-xl overflow-hidden">
+                            <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/3e13119b71ab49a2b3afec5a8f4a7fb1~tplv-a9rns2rl98-image.image?rcl=20251124203723AA54BA6E84B187F0DD32&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1766579899&x-signature=nszuPoFrm8sj22I5M6jVjVQAWAk%3D" alt="矛盾时刻" class="w-full h-64 object-cover">
+                            <div class="p-4">
+                                <p class="text-gray-700">我们依然紧紧握着彼此的手，因为我们相信爱能战胜一切。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 互动探索区 -->
+            <div class="mt-20 bg-white rounded-2xl shadow-xl p-8">
+                <h3 class="text-xl md:text-2xl font-bold text-primary mb-6 text-center">探索更多故事</h3>
+                <p class="text-gray-600 mb-8 text-center max-w-2xl mx-auto">
+                    点击下方的卡片，发现更多我们的美好回忆。
+                    每一张卡片背后都有一个特别的故事，等待你去探索。
+                </p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- 探索卡片 1 -->
+                    <div class="explore-card bg-soft rounded-xl shadow-lg overflow-hidden cursor-pointer transform transition-all duration-300 hover:scale-105" onclick="showExploreContent('explore1')">
+                        <div class="h-48 bg-primary bg-opacity-20 flex items-center justify-center">
+                            <i class="fa fa-camera text-primary text-4xl"></i>
+                        </div>
+                        <div class="p-4">
+                            <h4 class="font-bold text-lg mb-2">我们的合照</h4>
+                            <p class="text-gray-600 text-sm">点击查看我们的合照集，每一张都充满回忆。</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 探索卡片 2 -->
+                    <div class="explore-card bg-soft rounded-xl shadow-lg overflow-hidden cursor-pointer transform transition-all duration-300 hover:scale-105" onclick="showExploreContent('explore2')">
+                        <div class="h-48 bg-secondary bg-opacity-20 flex items-center justify-center">
+                            <i class="fa fa-map-marker text-secondary text-4xl"></i>
+                        </div>
+                        <div class="p-4">
+                            <h4 class="font-bold text-lg mb-2">我们去过的地方</h4>
+                            <p class="text-gray-600 text-sm">点击查看我们一起旅行过的地方，重温美好时光。</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 探索卡片 3 -->
+                    <div class="explore-card bg-soft rounded-xl shadow-lg overflow-hidden cursor-pointer transform transition-all duration-300 hover:scale-105" onclick="showExploreContent('explore3')">
+                        <div class="h-48 bg-accent bg-opacity-20 flex items-center justify-center">
+                            <i class="fa fa-gift text-accent text-4xl"></i>
+                        </div>
+                        <div class="p-4">
+                            <h4 class="font-bold text-lg mb-2">特别的礼物</h4>
+                            <p class="text-gray-600 text-sm">点击查看我们互送的礼物，每一份都代表着深深的爱意。</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 探索内容区域 -->
+                <div id="explore-content" class="mt-8 hidden">
+                    <div class="bg-soft rounded-xl p-6 shadow-md">
+                        <div id="explore1" class="explore-detail hidden">
+                            <h4 class="text-xl font-bold text-primary mb-4">我们的合照集</h4>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <div class="bg-white rounded-lg overflow-hidden shadow">
+                                    <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/a00d78d17dfd40feb822406ae9db2648~tplv-a9rns2rl98-image.image?rcl=20251124203723AA54BA6E84B187F0DD32&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1766579879&x-signature=Cjs49d9a3NL2jdq70mglI3WvsCo%3D" alt="合照1" class="w-full h-32 object-cover">
+                                </div>
+                                <div class="bg-white rounded-lg overflow-hidden shadow">
+                                    <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/8c61d43476cb4460ae504d22e5337f10~tplv-a9rns2rl98-image.image?rcl=20251124203723AA54BA6E84B187F0DD32&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1766579899&x-signature=0AWpGtx8v7hrQNlc82NytY6M350%3D" alt="合照2" class="w-full h-32 object-cover">
+                                </div>
+                                <div class="bg-white rounded-lg overflow-hidden shadow">
+                                    <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/38fd68ba116444de8c69912042d7b852~tplv-a9rns2rl98-image.image?rcl=20251124203723AA54BA6E84B187F0DD32&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1766579899&x-signature=e7GVL5Opt9EFwv4iT7oRbBd7WJ4%3D" alt="合照3" class="w-full h-32 object-cover">
+                                </div>
+                                <div class="bg-white rounded-lg overflow-hidden shadow">
+                                    <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/64c454f9fbda4ced87a88aa302d386e9~tplv-a9rns2rl98-image.image?rcl=20251124203723AA54BA6E84B187F0DD32&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1766579899&x-signature=abTd1AxvDXmHByx7jcaUVmwA0rs%3D" alt="合照4" class="w-full h-32 object-cover">
+                                </div>
+                            </div>
+                            <p class="mt-4 text-gray-600">
+                                这些照片记录了我们在一起的美好时光，每一张都承载着珍贵的回忆。
+                                从第一次相遇到现在，我们一起经历了许多，这些照片见证了我们的爱情成长。
+                            </p>
+                        </div>
+                        
+                        <div id="explore2" class="explore-detail hidden">
+                            <h4 class="text-xl font-bold text-secondary mb-4">我们去过的地方</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="bg-white rounded-lg overflow-hidden shadow p-4">
+                                    <h5 class="font-bold mb-2">草原</h5>
+                                    <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/8c61d43476cb4460ae504d22e5337f10~tplv-a9rns2rl98-image.image?rcl=20251124203723AA54BA6E84B187F0DD32&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1766579899&x-signature=0AWpGtx8v7hrQNlc82NytY6M350%3D" alt="海边之旅" class="w-full h-40 object-cover rounded mb-2">
+                                    <p class="text-gray-600 text-sm">
+                                        我们一起去了草原，看着美丽的日落，手牵手漫步在小路上。
+                                        那一刻，我觉得世界上最幸福的事情莫过于此。
+                                    </p>
+                                </div>
+                                <div class="bg-white rounded-lg overflow-hidden shadow p-4">
+                                    <h5 class="font-bold mb-2">小酒馆约会</h5>
+                                    <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/64c454f9fbda4ced87a88aa302d386e9~tplv-a9rns2rl98-image.image?rcl=20251124203723AA54BA6E84B187F0DD32&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1766579899&x-signature=abTd1AxvDXmHByx7jcaUVmwA0rs%3D" alt="咖啡馆约会" class="w-full h-40 object-cover rounded mb-2">
+                                    <p class="text-gray-600 text-sm">
+                                        这是我们第一次约会的小酒馆，暧昧的氛围，
+                                        还有你温暖的笑容，都让我难以忘怀。
+                                    </p>
+                                </div>
+                            </div>
+                            <p class="mt-4 text-gray-600">
+                                我们一起去过很多地方，每一个地方都留下了我们的足迹和回忆。
+                                我希望未来能和你一起去更多的地方，创造更多美好的回忆。
+                            </p>
+                        </div>
+                        
+                        <div id="explore3" class="explore-detail hidden">
+                            <h4 class="text-xl font-bold text-accent mb-4">特别的礼物</h4>
+                            <div class="bg-white rounded-lg overflow-hidden shadow p-4">
+                                <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/38fd68ba116444de8c69912042d7b852~tplv-a9rns2rl98-image.image?rcl=20251124203723AA54BA6E84B187F0DD32&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1766579899&x-signature=e7GVL5Opt9EFwv4iT7oRbBd7WJ4%3D" alt="生日礼物" class="w-full h-40 object-cover rounded mb-4">
+                                <h5 class="font-bold mb-2">你的生日礼物</h5>
+                                <p class="text-gray-600">
+                                    这是我为你准备的生日礼物，看到你开心的笑容，我觉得一切都值得。
+                                    希望这个礼物能让你感受到我对你的爱。
+                                </p>
+                            </div>
+                            <p class="mt-4 text-gray-600">
+                                每一份礼物都代表着我对你的爱和关心。
+                                我喜欢为你准备惊喜，看到你开心的样子，我也会感到无比幸福。
+                                未来，我会继续为你准备更多特别的礼物。
+                            </p>
+                        </div>
+                        
+                        <button onclick="hideExploreContent()" class="mt-6 bg-primary hover:bg-pink-500 text-white font-bold py-2 px-4 rounded-full shadow transition-all duration-300">
+                            关闭
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 二维码互动 -->
+    <section id="qrcode" class="min-h-screen py-20 px-4">
+        <div class="container mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-2xl md:text-3xl lg:text-4xl font-bold text-primary mb-4">二维码互动</h2>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                    扫描实体相册中的二维码，解锁更多隐藏内容，体验独特的互动探索乐趣。
+                    每一张照片背后都有一个特别的故事，等待你去发现。
+                </p>
+            </div>
+            
+            <div class="flex flex-col md:flex-row items-center">
+                <div class="md:w-1/2 mb-10 md:mb-0">
+                    <div class="bg-white rounded-xl shadow-xl p-8">
+                        <h3 class="text-xl md:text-2xl font-bold text-primary mb-6">如何使用</h3>
+                        <div class="space-y-6">
+                            <div class="flex items-start">
+                                <div class="bg-primary bg-opacity-10 rounded-full w-10 h-10 flex items-center justify-center mr-4 flex-shrink-0">
+                                    <span class="font-bold text-primary">1</span>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-lg mb-2">准备手机</h4>
+                                    <p class="text-gray-600">
+                                        打开你的手机相机，确保相机可以正常使用。
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <div class="bg-primary bg-opacity-10 rounded-full w-10 h-10 flex items-center justify-center mr-4 flex-shrink-0">
+                                    <span class="font-bold text-primary">2</span>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-lg mb-2">扫描二维码</h4>
+                                    <p class="text-gray-600">
+                                        将相机对准实体相册中照片背后的二维码，保持相机稳定。
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <div class="bg-primary bg-opacity-10 rounded-full w-10 h-10 flex items-center justify-center mr-4 flex-shrink-0">
+                                    <span class="font-bold text-primary">3</span>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-lg mb-2">探索内容</h4>
+                                    <p class="text-gray-600">
+                                        扫描成功后，你的手机会自动跳转到对应的网页，如果不行就复制浏览器打开
+                                        你可以在网页上查看更多照片背后的故事和回忆。
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <div class="bg-primary bg-opacity-10 rounded-full w-10 h-10 flex items-center justify-center mr-4 flex-shrink-0">
+                                    <span class="font-bold text-primary">4</span>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-lg mb-2">分享感受</h4>
+                                    <p class="text-gray-600">
+                                        如果你喜欢这些内容，可以分享给你的朋友，
+                                        或者给我留下你的感受和反馈。
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="md:w-1/2 md:pl-12">
+                    <div class="relative">
+                        <div class="bg-white rounded-xl shadow-xl p-6 qrcode-scanner inline-block">
+                            <div class="bg-gray-200 rounded-lg p-2 w-48 h-48 sm:w-64 sm:h-64 mx-auto">
+                                <div class="bg-white rounded p-1 h-full w-full flex items-center justify-center">
+                                    <div class="border-4 border-dashed border-gray-300 rounded h-full w-full flex items-center justify-center">
+                                        <p class="text-gray-500 text-center">
+                                            <i class="fa fa-qrcode text-4xl mb-2 block"></i>
+                                            二维码将显示在这里
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-center mt-4 text-gray-600">
+                                这是一个示例二维码，扫描后将跳转到我们的故事页面。
+                            </p>
+                        </div>
+                        
+                        <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/93b3614693c640039fbd745c16d7dcad~tplv-a9rns2rl98-image.image?rcl=20251124203723AA54BA6E84B187F0DD32&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1766579883&x-signature=dJQFcC8BcRea5zKd7Dq7nLlY0vg%3D" alt="线条小狗" class="absolute -bottom-10 -left-10 w-24 h-24 sm:w-32 sm:h-32 dog-character floating">
+                    </div>
+                    
+                    <div class="mt-12 bg-soft rounded-xl shadow-lg p-6">
+                        <h3 class="text-xl font-bold text-primary mb-4">互动体验</h3>
+                        <p class="text-gray-600 mb-6">
+                            点击下方按钮，体验二维码扫描后的互动效果。
+                        </p>
+                        <button id="scan-button" class="bg-primary hover:bg-pink-500 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-all duration-300 transform hover:scale-105 w-full">
+                            <i class="fa fa-camera mr-2"></i> 模拟扫描二维码
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 二维码扫描结果模态框 -->
+            <div id="qrcode-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+                <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
+                    <div class="bg-primary text-white p-4 flex justify-between items-center">
+                        <h3 class="text-xl font-bold">扫描结果</h3>
+                        <button id="close-modal" class="text-white hover:text-gray-200 focus:outline-none">
+                            <i class="fa fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    <div class="p-6">
+                        <div class="bg-soft rounded-lg p-4 mb-6">
+                            <h4 class="font-bold text-lg mb-2">发现新故事！</h4>
+                            <p class="text-gray-600">
+                                你扫描了"第一次约会"的二维码，解锁了更多精彩内容。
+                            </p>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/64c454f9fbda4ced87a88aa302d386e9~tplv-a9rns2rl98-image.image?rcl=20251124203723AA54BA6E84B187F0DD32&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1766579899&x-signature=abTd1AxvDXmHByx7jcaUVmwA0rs%3D" alt="第一次约会" class="w-full h-48 object-cover rounded-lg">
+                        </div>
+                        
+                        <div class="mb-6">
+                            <h4 class="font-bold text-lg mb-2">更多回忆</h4>
+                            <p class="text-gray-600 mb-4">
+                                那天我们聊了很多，从兴趣爱好到人生理想，仿佛有说不完的话。
+                                你告诉我你喜欢旅行，喜欢探索新的地方，喜欢尝试各种美食。
+                                我默默记在心里，希望有一天能和你一起去实现这些梦想。
+                            </p>
+                            <p class="text-gray-600">
+                                北京的氛围很温馨，阳光透过你的脸上，
+                                那一刻，我觉得你是世界上最美丽的人。
+                            </p>
+                        </div>
+                        
+                        <div class="flex space-x-4">
+                            <button class="bg-primary hover:bg-pink-500 text-white font-bold py-2 px-4 rounded-full shadow transition-all duration-300 flex-1">
+                                <i class="fa fa-heart mr-2"></i> 喜欢
+                            </button>
+                            <button class="bg-white hover:bg-gray-100 text-primary font-bold py-2 px-4 rounded-full shadow border-2 border-primary transition-all duration-300 flex-1">
+                                <i class="fa fa-comment mr-2"></i> 评论
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 道歉信 -->
+    <section id="apology" class="min-h-screen py-20 px-4 bg-soft">
+        <div class="container mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-2xl md:text-3xl lg:text-4xl font-bold text-primary mb-4">给特别的你</h2>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                    这是一封我想对你说的话，希望你能耐心读完。
+                </p>
+            </div>
+            
+            <div class="flex flex-col md:flex-row items-center">
+                <div class="md:w-1/2 mb-10 md:mb-0">
+                    <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/cbbe1be20d69459e915923c6babb712a~tplv-a9rns2rl98-image.image?rcl=20251124203723AA54BA6E84B187F0DD32&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1766579880&x-signature=RmK7wi7MNI3tzNuuJ9GCtb6qLn8%3D" alt="道歉信" class="rounded-xl shadow-xl w-full max-w-md mx-auto">
+                </div>
+                
+                <div class="md:w-1/2 md:pl-12">
+                    <div class="bg-white rounded-xl shadow-xl p-8">
+                        <div class="mb-6">
+                            <h3 class="text-xl md:text-2xl font-bold text-primary mb-4">亲爱的小俞：</h3>
+                            <div class="space-y-4 text-gray-700">
+                                <p>
+                                    这几天我反复翻看我们的聊天记录，从第一次互道晚安时你说的"晚安"，
+                                    到最后那天你说"我们都需要冷静一下"。
+                                </p>
+                                <p>
+                                    我知道，现在说什么都显得苍白无力，但我必须把这些憋在心里的话告诉你，
+                                    哪怕你永远不会看到。于是乎我就想到了用这本相册来告诉你，
+                                    你现在看见这个这里就继续探索这个相册吧。我觉得还是很有趣的希望你能喜欢。
+                                </p>
+                                <p>
+                                    我能想象，当你决定离开时，内心一定充满了失望和痛苦。
+                                    是我没有照顾好你的感受，是我忽略了你的需要。
+                                </p>
+                                <p>
+                                    我不该在你分享心情时心不在焉；
+                                    我不该把生活的压力转嫁到我们的关系上。
+                                </p>
+                                <p>
+                                    我已经开始学习如何更好地管理时间，每天都会留出专门的时间和你交流；
+                                    希望能够更好地理解你的想法；
+                                    我会努力调整自己的心态，把我们的关系放在更重要的位置。
+                                </p>
+                                <p>
+                                    我知道，道歉不能立刻抹去我的过错带来的伤害。
+                                    我只希望你能给我一个机会，让我用行动证明我真的在改变。
+                                    无论你的决定是什么，我都会尊重，并永远珍惜我们一起度过的美好时光。
+                                </p>
+                                <p class="font-bold mt-6">
+                                    永远爱你，<br>
+                                    你的祁
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex flex-col space-y-4">
+                            <button id="forgive-button" class="bg-primary hover:bg-pink-500 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-all duration-300 transform hover:scale-105 w-full">
+                                <i class="fa fa-heart mr-2"></i> 我原谅你
+                            </button>
+                            <button class="bg-white hover:bg-gray-100 text-primary font-bold py-3 px-6 rounded-full shadow-lg border-2 border-primary transition-all duration-300 transform hover:scale-105 w-full">
+                                <i class="fa fa-comment mr-2"></i> 回复
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 原谅动画效果 -->
+            <div id="forgive-animation" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 hidden">
+                <div class="text-center">
+                    <div class="mb-6">
+                        <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/a00d78d17dfd40feb822406ae9db2648~tplv-a9rns2rl98-image.image?rcl=20251124203723AA54BA6E84B187F0DD32&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1766579879&x-signature=Cjs49d9a3NL2jdq70mglI3WvsCo%3D" alt="情侣" class="w-48 h-48 sm:w-64 sm:h-64 mx-auto rounded-full border-4 border-white shadow-2xl">
+                    </div>
+                    <h3 class="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4 text-shadow-lg">谢谢你的原谅！</h3>
+                    <p class="text-lg sm:text-xl text-white mb-8 text-shadow">
+                        我会用行动证明，我会成为更好的人，
+                        我们的爱情也会更加美好！
+                    </p>
+                    <button id="close-animation" class="bg-primary hover:bg-pink-500 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-all duration-300 transform hover:scale-105">
+                        <i class="fa fa-heart mr-2"></i> 永远爱你
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white py-10 px-4">
+        <div class="container mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-6 md:mb-0">
+                    <div class="flex items-center">
+                        <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/93b3614693c640039fbd745c16d7dcad~tplv-a9rns2rl98-image.image?rcl=20251124203723AA54BA6E84B187F0DD32&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1766579883&x-signature=dJQFcC8BcRea5zKd7Dq7nLlY0vg%3D" alt="线条小狗" class="h-10 w-10 mr-2">
+                        <h2 class="text-xl font-bold">我们的故事相册</h2>
+                    </div>
+                    <p class="mt-2 text-gray-400">
+                        记录我们的美好回忆，表达我对你的爱意
+                    </p>
+                </div>
+                
+                <div class="flex space-x-6">
+                    <a href="#" class="text-white hover:text-primary transition-colors duration-300">
+                        <i class="fa fa-weixin text-2xl"></i>
+                    </a>
+                    <a href="#" class="text-white hover:text-primary transition-colors duration-300">
+                        <i class="fa fa-weibo text-2xl"></i>
+                    </a>
+                    <a href="#" class="text-white hover:text-primary transition-colors duration-300">
+                        <i class="fa fa-instagram text-2xl"></i>
+                    </a>
+                    <a href="#" class="text-white hover:text-primary transition-colors duration-300">
+                        <i class="fa fa-envelope text-2xl"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2024 我们的故事相册. 版权所有.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // 移动端菜单切换
+        document.getElementById('menu-toggle').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // 页面滚动动画
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化 GSAP ScrollTrigger
+            gsap.registerPlugin(ScrollTrigger);
+            
+            // 首页元素动画
+            gsap.from('.dog-character', {
+                y: 50,
+                opacity: 0,
+                duration: 1,
+                stagger: 0.2,
+                ease: 'power3.out'
+            });
+            
+            // 故事项目动画
+            gsap.utils.toArray('.photo-card').forEach(card => {
+                gsap.from(card, {
+                    scrollTrigger: {
+                        trigger: card,
+                        start: 'top bottom-=100',
+                        toggleActions: 'play none none none'
+                    },
+                    y: 50,
+                    opacity: 0,
+                    duration: 0.8,
+                    ease: 'power3.out'
+                });
+            });
+            
+            // 探索卡片动画
+            gsap.utils.toArray('.explore-card').forEach(card => {
+                gsap.from(card, {
+                    scrollTrigger: {
+                        trigger: card,
+                        start: 'top bottom-=100',
+                        toggleActions: 'play none none none'
+                    },
+                    y: 50,
+                    opacity: 0,
+                    duration: 0.8,
+                    stagger: 0.2,
+                    ease: 'power3.out'
+                });
+            });
+        });
+        
+        // 探索内容显示/隐藏
+        function showExploreContent(id) {
+            const exploreContent = document.getElementById('explore-content');
+            const exploreDetails = document.querySelectorAll('.explore-detail');
+            
+            exploreContent.classList.remove('hidden');
+            
+            exploreDetails.forEach(detail => {
+                detail.classList.add('hidden');
+            });
+            
+            document.getElementById(id).classList.remove('hidden');
+            
+            // 滚动到内容区域
+            exploreContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        
+        function hideExploreContent() {
+            const exploreContent = document.getElementById('explore-content');
+            exploreContent.classList.add('hidden');
+        }
+        
+        // 二维码扫描模拟
+        document.getElementById('scan-button').addEventListener('click', function() {
+            const qrcodeModal = document.getElementById('qrcode-modal');
+            
+            // 显示模态框
+            qrcodeModal.classList.remove('hidden');
+        });
+        
+        document.getElementById('close-modal').addEventListener('click', function() {
+            const qrcodeModal = document.getElementById('qrcode-modal');
+            qrcodeModal.classList.add('hidden');
+        });
+        
+        // 原谅按钮动画
+        document.getElementById('forgive-button').addEventListener('click', function() {
+            const forgiveAnimation = document.getElementById('forgive-animation');
+            
+            // 显示动画
+            forgiveAnimation.classList.remove('hidden');
+            
+            // 创建庆祝效果
+            createConfetti();
+        });
+        
+        document.getElementById('close-animation').addEventListener('click', function() {
+            const forgiveAnimation = document.getElementById('forgive-animation');
+            forgiveAnimation.classList.add('hidden');
+        });
+        
+        // 创建庆祝效果
+        function createConfetti() {
+            const container = document.getElementById('forgive-animation');
+            
+            // 清除现有纸屑
+            const existingConfetti = document.querySelectorAll('.confetti');
+            existingConfetti.forEach(confetti => confetti.remove());
+            
+            // 创建纸屑
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.classList.add('confetti');
+                
+                // 随机颜色
+                const colors = ['#FF6B8B', '#82C3EC', '#FFD166', '#06D6A0', '#118AB2'];
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                
+                // 随机位置
+                confetti.style.left = `${Math.random() * 100}vw`;
+                
+                // 随机大小
+                const size = Math.random() * 10 + 5;
+                confetti.style.width = `${size}px`;
+                confetti.style.height = `${size}px`;
+                
+                // 随机动画延迟
+                confetti.style.animationDelay = `${Math.random() * 5}s`;
+                
+                // 随机动画持续时间
+                confetti.style.animationDuration = `${Math.random() * 5 + 5}s`;
+                
+                container.appendChild(confetti);
+            }
+        }
+        
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    // 关闭移动端菜单
+                    document.getElementById('mobile-menu').classList.add('hidden');
+                    
+                    // 滚动到目标位置
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
